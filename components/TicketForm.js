@@ -47,7 +47,7 @@ export default function TicketForm() {
   return (
     <div className="max-w-lg mx-auto my-10 p-8 bg-white rounded-xl shadow-lg">
       <h2 className="text-3xl font-bold text-center text-gray-800 mb-2">
-        Compra de Tickets
+        Rifa bera SBR con el luis
       </h2>
       <p className="text-center text-gray-500 mb-8">
         Completa el formulario para asegurar tu compra.
