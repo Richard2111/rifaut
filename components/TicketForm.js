@@ -4,7 +4,7 @@ import { useState } from 'react';
 import Image from 'next/image'; // Importamos el componente de Imagen de Next.js
 
 // Lista de prefijos de operadoras
-const phoneOperators = ['0414', '0424', '0412', '0416', '0426'];
+const phoneOperators = ['0414', '0424', '0412', '0422', '0416', '0426'];
 
 export default function TicketForm() {
   // --- ESTADO DEL FORMULARIO ---
@@ -165,22 +165,6 @@ export default function TicketForm() {
           <h3 className="text-center font-semibold text-gray-800">
             Datos para el Pago Móvil
           </h3>
-          {/* Cédula */}
-          <div>
-            <label className="text-sm font-medium text-gray-600">Cédula de Identidad</label>
-            <div className="mt-1 flex items-center justify-between rounded-md bg-white p-2 border border-gray-300">
-              <span className="font-mono text-lg font-bold text-gray-900">
-                <span className="text-gray-500">V-</span>23526847
-              </span>
-              <button
-                type="button"
-                onClick={() => handleCopy('23526847', 'id')}
-                className="rounded-md bg-gray-200 px-3 py-1 text-sm font-semibold text-gray-800 hover:bg-gray-300 transition-colors"
-              >
-                {copiedItem === 'id' ? '¡Copiado!' : 'Copiar'}
-              </button>
-            </div>
-          </div>
           {/* Teléfono */}
           <div>
             <label className="text-sm font-medium text-gray-600">Número de Teléfono</label>
@@ -194,6 +178,22 @@ export default function TicketForm() {
                 className="rounded-md bg-gray-200 px-3 py-1 text-sm font-semibold text-gray-800 hover:bg-gray-300 transition-colors"
               >
                 {copiedItem === 'phone' ? '¡Copiado!' : 'Copiar'}
+              </button>
+            </div>
+          </div>
+          {/* Cédula */}
+          <div>
+            <label className="text-sm font-medium text-gray-600">Cédula de Identidad</label>
+            <div className="mt-1 flex items-center justify-between rounded-md bg-white p-2 border border-gray-300">
+              <span className="font-mono text-lg font-bold text-gray-900">
+                <span className="text-gray-500">V-</span>23526847
+              </span>
+              <button
+                type="button"
+                onClick={() => handleCopy('23526847', 'id')}
+                className="rounded-md bg-gray-200 px-3 py-1 text-sm font-semibold text-gray-800 hover:bg-gray-300 transition-colors"
+              >
+                {copiedItem === 'id' ? '¡Copiado!' : 'Copiar'}
               </button>
             </div>
           </div>
