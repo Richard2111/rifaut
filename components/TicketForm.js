@@ -1,6 +1,7 @@
 "use client"; // Directiva necesaria para componentes con interactividad en el App Router
 
 import { useState } from 'react';
+import Image from 'next/image'; // Importamos el componente de Imagen de Next.js
 
 // Lista de prefijos de operadoras
 const phoneOperators = ['0414', '0424', '0412', '0416', '0426'];
@@ -13,6 +14,7 @@ export default function TicketForm() {
   const [phoneNumber, setPhoneNumber] = useState(''); // Número de teléfono
   const [reference, setReference] = useState(''); // Referencia de pago
   const [fullName, setFullName] = useState(''); // Nombre y apellido
+  const [copiedItem, setCopiedItem] = useState(null); // Estado para feedback visual al copiar
 
   // --- LÓGICA DE NEGOCIO ---
   const TICKET_PRICE = 5.0; // Precio por cada ticket
@@ -26,6 +28,18 @@ export default function TicketForm() {
   const handleDecrement = () => {
     // Evita que el contador baje de 1
     setTicketCount((prevCount) => (prevCount > 1 ? prevCount - 1 : 1));
+  };
+
+  // Función para copiar texto al portapapeles
+  const handleCopy = (textToCopy, itemName) => {
+    navigator.clipboard.writeText(textToCopy).then(() => {
+      // Muestra feedback visual
+      setCopiedItem(itemName);
+      // Resetea el feedback después de 2 segundos
+      setTimeout(() => {
+        setCopiedItem(null);
+      }, 2000);
+    });
   };
 
   const handleSubmit = (event) => {
@@ -49,6 +63,19 @@ export default function TicketForm() {
       <h2 className="text-3xl font-bold text-center text-gray-800 mb-2">
         Rifa bera SBR con el luis
       </h2>
+
+      {/* --- Imagen del Premio --- */}
+      <div className="my-6">
+        <Image
+          src="/SBR-2025-NEGRO.png" // Asegúrate de que este sea el nombre de tu archivo en la carpeta /public
+          alt="Premio de la rifa: Moto Bera SBR"
+          width={100}
+          height={100}
+          className="mx-auto rounded-lg shadow-md object-cover"
+          priority // Ayuda a que la imagen cargue más rápido
+        />
+      </div>
+
       <p className="text-center text-gray-500 mb-8">
         Completa el formulario para asegurar tu compra.
       </p>
@@ -130,6 +157,52 @@ export default function TicketForm() {
               required
               pattern="\d{7}" // Valida que sean exactamente 7 dígitos
             />
+          </div>
+        </div>
+
+        {/* --- Datos para el Pago Móvil --- */}
+        <div className="space-y-4 rounded-lg border border-gray-200 bg-gray-50 p-4">
+          <h3 className="text-center font-semibold text-gray-800">
+            Datos para el Pago Móvil
+          </h3>
+          {/* Cédula */}
+          <div>
+            <label className="text-sm font-medium text-gray-600">Cédula de Identidad</label>
+            <div className="mt-1 flex items-center justify-between rounded-md bg-white p-2 border border-gray-300">
+              <span className="font-mono text-lg font-bold text-gray-900">
+                <span className="text-gray-500">V-</span>23526847
+              </span>
+              <button
+                type="button"
+                onClick={() => handleCopy('23526847', 'id')}
+                className="rounded-md bg-gray-200 px-3 py-1 text-sm font-semibold text-gray-800 hover:bg-gray-300 transition-colors"
+              >
+                {copiedItem === 'id' ? '¡Copiado!' : 'Copiar'}
+              </button>
+            </div>
+          </div>
+          {/* Teléfono */}
+          <div>
+            <label className="text-sm font-medium text-gray-600">Número de Teléfono</label>
+            <div className="mt-1 flex items-center justify-between rounded-md bg-white p-2 border border-gray-300">
+              <span className="font-mono text-lg font-bold text-gray-900">
+                <span className="text-gray-500">0412-</span>8016133
+              </span>
+              <button
+                type="button"
+                onClick={() => handleCopy('8016133', 'phone')}
+                className="rounded-md bg-gray-200 px-3 py-1 text-sm font-semibold text-gray-800 hover:bg-gray-300 transition-colors"
+              >
+                {copiedItem === 'phone' ? '¡Copiado!' : 'Copiar'}
+              </button>
+            </div>
+          </div>
+          {/* Banco */}
+          <div>
+            <label className="text-sm font-medium text-gray-600">Banco</label>
+            <div className="mt-1 rounded-md bg-white p-2 border border-gray-300 font-mono text-lg font-bold text-gray-900">
+              Banesco
+            </div>
           </div>
         </div>
 
