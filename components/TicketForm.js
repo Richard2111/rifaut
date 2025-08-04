@@ -17,7 +17,7 @@ export default function TicketForm() {
   const [copiedItem, setCopiedItem] = useState(null); // Estado para feedback visual al copiar
 
   // --- LÓGICA DE NEGOCIO ---
-  const TICKET_PRICE = 5.0; // Precio por cada ticket
+  const TICKET_PRICE = 100.0; // Precio por cada ticket
   const totalPrice = ticketCount * TICKET_PRICE; // Cálculo del precio total
 
   // --- MANEJADORES DE EVENTOS ---
@@ -106,11 +106,20 @@ export default function TicketForm() {
         </div>
 
         {/* --- Precio Total --- */}
-        <div className="text-center bg-gray-100 p-4 rounded-lg">
-          <span className="text-lg font-medium text-gray-600">Precio Total:</span>
-          <span className="ml-2 text-2xl font-bold text-blue-600">
-            ${totalPrice.toFixed(2)}
-          </span>
+        <div className="flex items-center justify-between rounded-lg bg-gray-100 p-4">
+          <div>
+            <span className="text-lg font-medium text-gray-600">Precio Total:</span>
+            <span className="ml-2 text-2xl font-bold text-blue-600">
+              Bs. {totalPrice.toFixed(2)}
+            </span>
+          </div>
+          <button
+            type="button"
+            onClick={() => handleCopy(totalPrice.toFixed(2), 'total')}
+            className="rounded-md bg-gray-200 px-3 py-1 text-sm font-semibold text-gray-800 hover:bg-gray-300 transition-colors"
+          >
+            {copiedItem === 'total' ? '¡Copiado!' : 'Copiar'}
+          </button>
         </div>
 
         {/* --- Nombre y Apellido --- */}
