@@ -78,7 +78,7 @@ export default function TicketForm() {
   return (
     <div className="max-w-lg mx-auto my-10 p-8 bg-white rounded-xl shadow-lg">
       <h2 className="text-3xl font-bold text-center text-gray-800 mb-2">
-        Rifa "Los Mirandinos"
+        {'Rifa "Los Mirandinos"'}
       </h2>
 
       {/* --- Imagen del Premio --- */}
