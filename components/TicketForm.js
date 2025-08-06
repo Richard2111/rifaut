@@ -21,7 +21,7 @@ export default function TicketForm() {
   const [query, setQuery] = useState(''); // Estado para la búsqueda en el combobox
 
   // --- LÓGICA DE NEGOCIO ---
-  const TICKET_PRICE = 5.0; // Precio por cada ticket
+  const TICKET_PRICE = 100.0; // Precio por cada ticket
   const totalPrice = ticketCount * TICKET_PRICE; // Cálculo del precio total
 
   // --- MANEJADORES DE EVENTOS ---
@@ -78,23 +78,25 @@ export default function TicketForm() {
   return (
     <div className="max-w-lg mx-auto my-10 p-8 bg-white rounded-xl shadow-lg">
       <h2 className="text-3xl font-bold text-center text-gray-800 mb-2">
-        Rifa bera SBR con el luis
+        Rifa "Los Mirandinos"
       </h2>
 
       {/* --- Imagen del Premio --- */}
       <div className="my-6">
         <Image
-          src="/moto-rifa.png" // Asegúrate de que este sea el nombre de tu archivo en la carpeta /public
+          src="/SBR-2025-NEGRO.png" // Asegúrate de que este sea el nombre de tu archivo en la carpeta /public
           alt="Premio de la rifa: Moto Bera SBR"
-          width={400}
-          height={400}
+          width={100}
+          height={100}
           className="mx-auto rounded-lg shadow-md object-cover"
           priority // Ayuda a que la imagen cargue más rápido
         />
       </div>
 
       <p className="text-center text-gray-500 mb-8">
-        Completa el formulario para asegurar tu compra.
+        Completa el formulario para asegurar tu compra ganadora.
+        Premios:
+        1 - SBR 2025.
       </p>
 
       <form onSubmit={handleSubmit} className="space-y-6">
@@ -178,7 +180,7 @@ export default function TicketForm() {
               value={phoneNumber}
               onChange={(e) => setPhoneNumber(e.target.value.replace(/\D/g, ''))} // Solo permite dígitos
               maxLength="7"
-              placeholder="1234567"
+              placeholder=""
               className="block w-full px-3 py-2 bg-white border border-gray-300 rounded-r-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 font-medium text-gray-900"
               required
               pattern="\d{7}" // Valida que sean exactamente 7 dígitos
@@ -234,13 +236,26 @@ export default function TicketForm() {
 
         {/* --- Selector de Banco de Origen --- */}
         <div>
-          <Combobox value={selectedBank} onChange={setSelectedBank}>
+          <Combobox
+            value={selectedBank}
+            onChange={(bank) => {
+              // Previene que la aplicación falle si el usuario borra la búsqueda.
+              // Se asegura de que `selectedBank` no pueda ser nulo, manteniendo siempre un banco seleccionado.
+              if (bank) setSelectedBank(bank);
+            }}
+          >
             <Combobox.Label className="block text-sm font-medium text-gray-700">Banco desde donde se realizó el Pago Móvil</Combobox.Label>
             <div className="relative mt-1">
+              <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="size-5 text-gray-400">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607Z" />
+                </svg>
+              </div>
               <Combobox.Input
-                className="w-full rounded-md border border-gray-300 bg-white py-2 pl-3 pr-10 shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500 font-medium text-gray-900"
+                className="w-full rounded-md border border-gray-300 bg-white py-2 pl-10 pr-10 shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500 font-medium text-gray-900"
                 onChange={(event) => setQuery(event.target.value)}
                 displayValue={(bank) => `${bank.id} - ${bank.name}`}
+                placeholder="Buscar por nombre o código..."
               />
               <Combobox.Button className="absolute inset-y-0 right-0 flex items-center rounded-r-md px-2 focus:outline-none">
                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="size-5 text-gray-400">
