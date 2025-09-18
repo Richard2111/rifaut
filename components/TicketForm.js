@@ -2,11 +2,10 @@
 
 import { useState, Fragment } from 'react'; // Importamos Fragment
 import Image from 'next/image'; // Importamos el componente de Imagen de Next.js
-import { Combobox, Transition } from '@headlessui/react'; // Importamos el Combobox
 import { banks } from './banks'; // Importamos la lista de bancos
 
 // Lista de prefijos de operadoras
-const phoneOperators = ['0414', '0424', '0412', '0416', '0426'];
+const phoneOperators = ['0412', '0424', '0414', '0416', '0426', '0422'];
 
 export default function TicketForm() {
   // --- ESTADO DEL FORMULARIO ---
@@ -17,8 +16,8 @@ export default function TicketForm() {
   const [reference, setReference] = useState(''); // Referencia de pago
   const [fullName, setFullName] = useState(''); // Nombre y apellido
   const [copiedItem, setCopiedItem] = useState(null); // Estado para feedback visual al copiar
-  const [selectedBank, setSelectedBank] = useState(banks[0]); // Estado para el banco seleccionado
-  const [query, setQuery] = useState(''); // Estado para la búsqueda en el combobox
+  const [selectedBankId, setSelectedBankId] = useState(banks[0].id); // Estado para el ID del banco seleccionado
+  const [loading, setLoading] = useState(false); // Estado para el preloader
 
   // --- LÓGICA DE NEGOCIO ---
   const TICKET_PRICE = 100.0; // Precio por cada ticket
@@ -46,64 +45,81 @@ export default function TicketForm() {
     });
   };
 
-  // Lógica para filtrar los bancos según la búsqueda del usuario
-  const filteredBanks =
-    query === ''
-      ? banks
-      : banks.filter((bank) =>
-          bank.name
-            .toLowerCase()
-            .replace(/\s+/g, '')
-            .includes(query.toLowerCase().replace(/\s+/g, '')) ||
-          bank.id.includes(query)
-        );
-
-  const handleSubmit = (event) => {
-    event.preventDefault(); // Previene que la página se recargue al enviar
-
-    // Aquí es donde enviarías los datos a tu backend o API
+  const handleSubmit = async (event) => {
+    event.preventDefault();
+    setLoading(true); // Mostrar preloader
+    const MIN_TIMEOUT = 2000; // milisegundos
+    const startTime = Date.now();
     const formData = {
       tickets: ticketCount,
       total: totalPrice,
-      phone: `${operator}${phoneNumber}`,
-      bankId: selectedBank.id, // Añadimos el ID del banco seleccionado
-      reference,
+      phoneNum: `${operator}${phoneNumber}`,
+      bankId: selectedBankId,
+      ReferenceNumber: reference,
       fullName,
     };
-
-    console.log('Datos del formulario a enviar:', formData);
-    alert(`¡Gracias, ${fullName}! Tu compra de ${ticketCount} ticket(s) por Bs. ${totalPrice.toFixed(2)} ha sido registrada.`);
+    console.log('JSON enviado:', JSON.stringify(formData)); // Imprime el JSON en consola
+    try {
+      // Reemplaza la URL por la de tu backend/API
+      const response = await fetch("https://ejemplo.com/api/tickets", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(formData),
+      });
+      const result = await response.json();
+      // Aquí puedes manejar la respuesta, por ejemplo mostrar un mensaje de éxito
+      alert(`¡Gracias, ${fullName}! Tu compra ha sido registrada.`);
+    } catch (error) {
+      alert("Hubo un error al procesar la compra. Intenta de nuevo.");
+    } finally {
+      const elapsed = Date.now() - startTime;
+      const remaining = MIN_TIMEOUT - elapsed;
+      if (remaining > 0) {
+        setTimeout(() => setLoading(false), remaining);
+      } else {
+        setLoading(false);
+      }
+    }
   };
 
   return (
-    <div className="max-w-lg mx-auto my-10 p-8 bg-white rounded-xl shadow-lg">
-      <h2 className="text-3xl font-bold text-center text-gray-800 mb-2">
-        {'Rifa "Los Mirandinos"'}
+    <div className="max-w-lg mx-auto p-4 bg-white rounded-xl shadow-lg">
+      {/* Preloader */}
+      {loading && (
+        <div className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50 flex-col">
+          <div className="animate-spin rounded-full h-16 w-16 border-t-4 border-b-4 border-green-500"></div>
+          <span className="ml-4 text-white text-xl font-bold">Por favor espera un momento, estamos procesando tu compra...</span>
+          <p className="mt-4 text-white text-base text-center">No cierres, ni recargues la página hasta que el proceso termine.</p>
+          <p className="mt-4 text-white text-base text-center">Si no se puede verificar el Pago Móvil verifique los datos ingresados e intente nuevamente.</p>
+          <p className="mt-4 text-white text-base text-center">Si usted realizo el pago y esta completamente seguro que los datos que ingreso son correctos, por favor, comuniquese con Soporte mediante un mensaje de WhatsApp.</p>
+        </div>
+      )}
+
+      <h2 className="text-xl font-bold text-center text-gray-800 mb-2">
+        {'"SBR 2025"'}
       </h2>
 
+      <p className="text-center text-black mb-3">
+        Premio: (1) Una - Moto SBR 2025.
+      </p>
+
       {/* --- Imagen del Premio --- */}
-      <div className="my-6">
+      <div className="my-3">
         <Image
-          src="/SBR-2025-NEGRO.png" // Asegúrate de que este sea el nombre de tu archivo en la carpeta /public
-          alt="Premio de la rifa: Moto Bera SBR"
-          width={100}
-          height={100}
+          src="/SBR-2025-NEGRO.png"
+          alt="Moto Bera SBR"
+          width={150}
+          height={150}
           className="mx-auto rounded-lg shadow-md object-cover"
           priority // Ayuda a que la imagen cargue más rápido
         />
       </div>
 
-      <p className="text-center text-gray-500 mb-8">
-        Completa el formulario para asegurar tu compra ganadora.
-        Premios:
-        1 - SBR 2025.
-      </p>
-
-      <form onSubmit={handleSubmit} className="space-y-6">
+      <form onSubmit={handleSubmit} className="space-y-3">
         {/* --- Contador de Tickets --- */}
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-2">
-            Cantidad de Tickets
+            Seleccione la cantidad de Tickets que desea comprar
           </label>
           <div className="flex items-center justify-center gap-4 p-2 border rounded-lg">
             <button
@@ -127,7 +143,7 @@ export default function TicketForm() {
         {/* --- Precio Total --- */}
         <div className="flex items-center justify-between rounded-lg bg-gray-100 p-4">
           <div>
-            <span className="text-lg font-medium text-gray-600">Precio Total:</span>
+            <span className="text-lg font-medium text-gray-600">Monto:</span>
             <span className="ml-2 text-2xl font-bold text-blue-600">
               Bs. {totalPrice.toFixed(2)}
             </span>
@@ -141,57 +157,10 @@ export default function TicketForm() {
           </button>
         </div>
 
-        {/* --- Nombre y Apellido --- */}
-        <div>
-          <label htmlFor="fullName" className="block text-sm font-medium text-gray-700">
-            Nombre y Apellido
-          </label>
-          <input
-            type="text"
-            id="fullName"
-            value={fullName}
-            onChange={(e) => setFullName(e.target.value.replace(/[^\p{L}\s]/gu, ''))} // Solo permite letras y espacios
-            className="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 font-medium text-gray-900"
-            maxLength="30"
-            required
-          />
-        </div>
-
-        {/* --- Número de Teléfono --- */}
-        <div>
-          <label htmlFor="phone" className="block text-sm font-medium text-gray-700">
-            Número de Teléfono
-          </label>
-          <div className="flex mt-1">
-            <select
-              value={operator}
-              onChange={(e) => setOperator(e.target.value)}
-              className="px-3 py-2 bg-white border border-r-0 border-gray-300 rounded-l-md focus:outline-none font-medium text-gray-800"
-            >
-              {phoneOperators.map((op) => (
-                <option key={op} value={op}>
-                  {op}
-                </option>
-              ))}
-            </select>
-            <input
-              type="tel"
-              id="phone"
-              value={phoneNumber}
-              onChange={(e) => setPhoneNumber(e.target.value.replace(/\D/g, ''))} // Solo permite dígitos
-              maxLength="7"
-              placeholder=""
-              className="block w-full px-3 py-2 bg-white border border-gray-300 rounded-r-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 font-medium text-gray-900"
-              required
-              pattern="\d{7}" // Valida que sean exactamente 7 dígitos
-            />
-          </div>
-        </div>
-
         {/* --- Datos para el Pago Móvil --- */}
         <div className="space-y-4 rounded-lg border border-gray-200 bg-gray-50 p-4">
           <h3 className="text-center font-semibold text-gray-800">
-            Datos para el Pago Móvil
+            Datos para pagar por Pago Móvil
           </h3>
           {/* Cédula */}
           <div>
@@ -229,90 +198,82 @@ export default function TicketForm() {
           <div>
             <label className="text-sm font-medium text-gray-600">Banco</label>
             <div className="mt-1 rounded-md bg-white p-2 border border-gray-300 font-mono text-lg font-bold text-gray-900">
-              Banesco
+              0102 - Banesco
             </div>
           </div>
         </div>
 
-        {/* --- Selector de Banco de Origen --- */}
+{/* --- Nombre y Apellido --- */}
         <div>
-          <Combobox
-            value={selectedBank}
-            onChange={(bank) => {
-              // Previene que la aplicación falle si el usuario borra la búsqueda.
-              // Se asegura de que `selectedBank` no pueda ser nulo, manteniendo siempre un banco seleccionado.
-              if (bank) setSelectedBank(bank);
-            }}
-          >
-            <Combobox.Label className="block text-sm font-medium text-gray-700">Banco desde donde se realizó el Pago Móvil</Combobox.Label>
-            <div className="relative mt-1">
-              <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
-                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="size-5 text-gray-400">
-                  <path strokeLinecap="round" strokeLinejoin="round" d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607Z" />
-                </svg>
-              </div>
-              <Combobox.Input
-                className="w-full rounded-md border border-gray-300 bg-white py-2 pl-10 pr-10 shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500 font-medium text-gray-900"
-                onChange={(event) => setQuery(event.target.value)}
-                displayValue={(bank) => `${bank.id} - ${bank.name}`}
-                placeholder="Buscar por nombre o código..."
-              />
-              <Combobox.Button className="absolute inset-y-0 right-0 flex items-center rounded-r-md px-2 focus:outline-none">
-                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="size-5 text-gray-400">
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M8.25 15 12 18.75 15.75 15m-7.5-6L12 5.25 15.75 9" />
-                </svg>
-              </Combobox.Button>
+          <label htmlFor="fullName" className="block text-sm font-medium text-gray-700">
+            Nombre y Apellido
+          </label>
+          <input
+            type="text"
+            id="fullName"
+            value={fullName}
+            onChange={(e) => setFullName(e.target.value.replace(/[^\p{L}\s]/gu, ''))} // Solo permite letras y espacios
+            className="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 font-medium text-gray-900"
+            maxLength="30"
+            required
+          />
+        </div>
 
-              <Transition
-                as={Fragment}
-                leave="transition ease-in duration-100"
-                leaveFrom="opacity-100"
-                leaveTo="opacity-0"
-                afterLeave={() => setQuery('')}
-              >
-                <Combobox.Options className="absolute z-10 mt-1 max-h-60 w-full overflow-auto rounded-md bg-white py-1 text-base shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none sm:text-sm">
-                  {filteredBanks.length === 0 && query !== '' ? (
-                    <div className="relative cursor-default select-none px-4 py-2 text-gray-700">
-                      No se encontró el banco.
-                    </div>
-                  ) : (
-                    filteredBanks.map((bank) => (
-                      <Combobox.Option
-                        key={bank.id}
-                        className={({ active }) =>
-                          `relative cursor-default select-none py-2 pl-10 pr-4 ${
-                            active ? 'bg-indigo-600 text-white' : 'text-gray-900'
-                          }`
-                        }
-                        value={bank}
-                      >
-                        {({ selected, active }) => (
-                          <>
-                            <span className={`block truncate ${selected ? 'font-medium' : 'font-normal'}`}>
-                              {bank.id} - {bank.name}
-                            </span>
-                            {selected ? (
-                              <span className={`absolute inset-y-0 left-0 flex items-center pl-3 ${active ? 'text-white' : 'text-indigo-600'}`}>
-                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="size-5">
-                                  <path strokeLinecap="round" strokeLinejoin="round" d="m4.5 12.75 6 6 9-13.5" />
-                                </svg>
-                              </span>
-                            ) : null}
-                          </>
-                        )}
-                      </Combobox.Option>
-                    ))
-                  )}
-                </Combobox.Options>
-              </Transition>
-            </div>
-          </Combobox>
+        {/* --- Número de Teléfono --- */}
+        <div>
+              <label htmlFor="phone" className="block text-sm font-medium text-gray-700">
+            Número de Teléfono
+          </label>
+          <div className="flex mt-1">
+            <select
+              value={operator}
+              onChange={(e) => setOperator(e.target.value)}
+              className="px-3 py-2 bg-white border border-r-0 border-gray-300 rounded-l-md focus:outline-none font-medium text-gray-800"
+            >
+              {phoneOperators.map((op) => (
+                <option key={op} value={op}>
+                  {op}
+                </option>
+              ))}
+            </select>
+            <input
+              type="tel"
+              id="phone"
+              value={phoneNumber}
+              onChange={(e) => setPhoneNumber(e.target.value.replace(/\D/g, ''))} // Solo permite dígitos
+              maxLength="7"
+              placeholder=""
+              className="block w-full px-3 py-2 bg-white border border-gray-300 rounded-r-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 font-medium text-gray-900"
+              required
+              pattern="\d{7}" // Valida que sean exactamente 7 dígitos
+            />
+          </div>
+        </div>
+
+        {/* --- Selector de Banco --- */}
+        <div>
+          <label htmlFor="bank" className="block text-sm font-medium text-gray-700">
+            Banco desde donde se realizó el Pago Móvil
+          </label>
+          <select
+            id="bank"
+            value={selectedBankId}
+            onChange={(e) => setSelectedBankId(e.target.value)}
+            className="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 font-medium text-gray-900"
+            required
+          >
+            {banks.map((bank) => (
+              <option key={bank.id} value={bank.id}>
+                {bank.id} - {bank.name}
+              </option>
+            ))}
+          </select>
         </div>
 
         {/* --- Referencia --- */}
         <div>
           <label htmlFor="reference" className="block text-sm font-medium text-gray-700">
-            Referencia de Pago
+            Referencia del Pago Móvil (Últimos 6 dígitos)
           </label>
           <input
             type="text"
@@ -333,6 +294,20 @@ export default function TicketForm() {
           Comprar Tickets
         </button>
       </form>
+
+<div className="flex justify-center mt-6">
+  <a
+    href="https://wa.me/584125977292" // Reemplaza por el número de soporte
+    target="_blank"
+    rel="noopener noreferrer"
+    className="flex items-center gap-2 px-4 py-2 bg-green-500 rounded-full shadow hover:bg-green-600 transition-colors"
+  >
+    <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" fill="currentColor" viewBox="0 0 24 24" className="text-white">
+      <path d="M12 2C6.477 2 2 6.477 2 12c0 1.85.504 3.59 1.382 5.08L2 22l5.08-1.382A9.96 9.96 0 0 0 12 22c5.523 0 10-4.477 10-10S17.523 2 12 2zm0 18c-1.64 0-3.17-.5-4.45-1.36l-.32-.21-3.01.82.81-2.94-.21-.33A7.96 7.96 0 0 1 4 12c0-4.41 3.59-8 8-8s8 3.59 8 8-3.59 8-8 8zm4.13-6.19c-.23-.12-1.36-.67-1.57-.75-.21-.08-.36-.12-.51.12-.15.23-.58.75-.71.9-.13.15-.26.17-.49.06-.23-.12-.97-.36-1.85-1.13-.68-.6-1.14-1.34-1.27-1.57-.13-.23-.01-.35.1-.47.1-.1.23-.26.34-.39.11-.13.15-.23.23-.38.08-.15.04-.29-.02-.41-.06-.12-.51-1.23-.7-1.68-.18-.44-.37-.38-.51-.39-.13-.01-.29-.01-.45-.01-.16 0-.41.06-.62.29-.21.23-.81.79-.81 1.93s.83 2.23.95 2.39c.12.15 1.63 2.5 3.95 3.4.55.19.98.3 1.31.38.55.14 1.05.12 1.45.07.44-.07 1.36-.56 1.55-1.1.19-.54.19-1 .13-1.1-.06-.1-.21-.16-.44-.28z"/>
+    </svg>
+    <span className="text-white font-semibold">Soporte WhatsApp</span>
+  </a>
+</div>
     </div>
   );
 }
