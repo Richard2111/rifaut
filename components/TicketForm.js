@@ -51,11 +51,11 @@ export default function TicketForm() {
     const MIN_TIMEOUT = 2000; // milisegundos
     const startTime = Date.now();
     const formData = {
-      tickets: ticketCount,
-      total: totalPrice,
-      phoneNum: `${operator}${phoneNumber}`,
+      entradas: ticketCount,
+      monto: totalPrice,
+      phoneNumber: `${operator}${phoneNumber}`,
       bankId: selectedBankId,
-      ReferenceNumber: reference,
+      referenceNumber: reference,
       fullName,
     };
     console.log('JSON enviado:', JSON.stringify(formData)); // Imprime el JSON en consola
